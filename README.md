@@ -44,4 +44,4 @@ Python kuruluysa bu klasörde şu komutu çalıştırın:
 python main.py
 ```
 
-Şu an kurum ve şube eklenebilir, kayıtlar menüden listelenebilir. Veriler henüz yalnızca program açıkken tutulur. Diğer işlemler sırayla eklenecektir.
+Şu an kurum, şube, bölüm ve hizmet eklenebilir. Her şubenin haftalık çalışma saatleri ayarlanabilir; kayıtlar menüden listelenebilir. Veriler henüz yalnızca program açıkken tutulur. Diğer işlemler sırayla eklenecektir.
