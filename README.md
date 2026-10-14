@@ -44,4 +44,4 @@ Python kuruluysa bu klasörde şu komutu çalıştırın:
 python main.py
 ```
 
-Şu an ana menü açılır, boş kurum listesi gösterilir ve programdan çıkılabilir. Diğer işlemler sırayla eklenecektir.
+Şu an kurum ve şube eklenebilir, kayıtlar menüden listelenebilir. Veriler henüz yalnızca program açıkken tutulur. Diğer işlemler sırayla eklenecektir.
