@@ -1,0 +1,10 @@
+# Yerel ve hassas yapılandırma
+.env
+.env.*
+!.env.example
+
+# Editör ve işletim sistemi dosyaları
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
