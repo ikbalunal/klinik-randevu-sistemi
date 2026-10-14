@@ -34,4 +34,14 @@ Klinik ve hastanelerin hizmetlerini, çalışanlarını, uygunluk saatlerini ve 
 
 ## Teknik yaklaşım
 
-Uygulama; sınıf yapısı, kapsülleme, kalıtım ve çok biçimlilik ilkeleriyle tasarlanacaktır. Kullanılacak teknoloji ve çalıştırma adımları geliştirme sırasında bu belgeye eklenecektir.
+Uygulama Python ile konsolda çalışır. Sınıf yapısı, kapsülleme, kalıtım ve çok biçimlilik ilkeleri geliştirme sırasında kullanılacaktır.
+
+## Çalıştırma
+
+Python kuruluysa bu klasörde şu komutu çalıştırın:
+
+```text
+python main.py
+```
+
+Şu an ana menü açılır, boş kurum listesi gösterilir ve programdan çıkılabilir. Diğer işlemler sırayla eklenecektir.

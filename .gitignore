@@ -3,6 +3,10 @@
 .env.*
 !.env.example
 
+# Python dosyaları
+__pycache__/
+*.pyc
+
 # Editör ve işletim sistemi dosyaları
 .vscode/
 .idea/
