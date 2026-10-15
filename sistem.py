@@ -1,5 +1,6 @@
 from kurum import Bolum, Hizmet, Kurum, Sube
 from kisiler import Calisan, Doktor, Hasta, SaglikPersoneli, Yonetici
+from randevu import Uygunluk
 
 
 class KlinikSistemi:
@@ -202,3 +203,39 @@ class KlinikSistemi:
                 return hizmet
 
         raise ValueError("Hizmet çalışanın şubesinde bulunamadı.")
+
+    def uygunluk_ekle(self, calisan_id, baslangic, bitis):
+        calisan = self.calisani_bul(calisan_id)
+
+        if calisan is None:
+            raise ValueError("Çalışan bulunamadı.")
+
+        uygunluk = Uygunluk(calisan_id, baslangic, bitis)
+        sube = self.sube_bul(calisan.sube_id)
+
+        if not sube.acik_mi(baslangic, bitis):
+            raise ValueError("Bu aralık şubenin çalışma saatleri dışında.")
+
+        for kayitli_uygunluk in calisan.uygunluklar:
+            if baslangic < kayitli_uygunluk.bitis and bitis > kayitli_uygunluk.baslangic:
+                raise ValueError("Bu aralık çalışanın başka bir uygunluğuyla çakışıyor.")
+
+        calisan.uygunluklar.append(uygunluk)
+        return uygunluk
+
+    def calisan_uygun_mu(self, calisan_id, baslangic, bitis):
+        calisan = self.calisani_bul(calisan_id)
+
+        if calisan is None:
+            return False
+
+        sube = self.sube_bul(calisan.sube_id)
+
+        if not sube.acik_mi(baslangic, bitis):
+            return False
+
+        for uygunluk in calisan.uygunluklar:
+            if uygunluk.kapsar(baslangic, bitis):
+                return True
+
+        return False

@@ -17,6 +17,7 @@ class Calisan(Kullanici):
         super().__init__(id, ad)
         self.sube_id = sube_id
         self.hizmet_idleri = []
+        self.uygunluklar = []
 
     def unvan(self):
         return "Çalışan"

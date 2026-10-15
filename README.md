@@ -44,6 +44,8 @@ Python kuruluysa bu klasörde şu komutu çalıştırın:
 python main.py
 ```
 
-İlk açılışta bir kurum ve yönetici oluşturulur. Yönetici şube, bölüm, hizmet, çalışma saati ve kişi kayıtlarını ekleyebilir; çalışanlara kendi şubelerindeki hizmetleri atayabilir. Hasta ve çalışan için ayrı menüler vardır.
+İlk açılışta bir kurum ve yönetici oluşturulur. Yönetici şube, bölüm, hizmet, çalışma saati ve kişi kayıtlarını ekleyebilir; çalışanlara kendi şubelerindeki hizmetleri atayabilir. Yönetici, çalışanın uygun olduğu tarih ve saat aralıklarını da ekleyip listeleyebilir. Çalışan kendi uygunluklarını görebilir. Hasta ve çalışan için ayrı menüler vardır.
+
+Uygunluk eklemeden önce şubenin o güne ait çalışma saatini ayarlayın. Tarih ve saati `25.10.2026 09:00` biçiminde girin. Uygunluk aynı gün içinde ve şubenin çalışma saatlerinde olmalıdır; aynı çalışanın aralıkları çakışamaz.
 
 Kullanıcı seçimi şu an parola kullanmaz. Veriler yalnızca program açıkken tutulur. Randevu işlemleri ve dosyaya kayıt sonraki adımlarda eklenecektir.

@@ -64,6 +64,16 @@ def saat_oku(soru):
         return None
 
 
+def tarih_saat_oku(soru):
+    giris = input(soru).strip()
+
+    try:
+        return datetime.strptime(giris, "%d.%m.%Y %H:%M")
+    except ValueError:
+        print("Tarih ve saati 25.10.2026 09:00 gibi yazın.")
+        return None
+
+
 def sube_sec(sistem, yonetici):
     sube_sayisi = 0
 
@@ -271,7 +281,7 @@ def yonetici_ekle_ekrani(sistem, kurum_id):
         print(hata)
 
 
-def hizmet_ata_ekrani(sistem, yonetici):
+def calisan_sec(sistem, yonetici):
     calisan_var = False
 
     for kullanici in sistem.kullanicilari_listele():
@@ -284,24 +294,35 @@ def hizmet_ata_ekrani(sistem, yonetici):
 
     if not calisan_var:
         print("Önce çalışan ekleyin.")
-        return
+        return None
 
     calisan_no = sayi_oku("Çalışan numarası: ")
 
     if calisan_no is None:
-        return
+        return None
 
     calisan = sistem.calisani_bul(calisan_no)
 
     if calisan is None:
         print("Çalışan bulunamadı.")
-        return
+        return None
 
     sube = sistem.sube_bul(calisan.sube_id)
 
     if sube.kurum_id != yonetici.kurum_id:
         print("Bu çalışan başka bir kuruma ait.")
+        return None
+
+    return calisan
+
+
+def hizmet_ata_ekrani(sistem, yonetici):
+    calisan = calisan_sec(sistem, yonetici)
+
+    if calisan is None:
         return
+
+    sube = sistem.sube_bul(calisan.sube_id)
 
     if len(sube.hizmetler) == 0:
         print("Önce çalışanın şubesine hizmet ekleyin.")
@@ -316,10 +337,49 @@ def hizmet_ata_ekrani(sistem, yonetici):
         return
 
     try:
-        hizmet = sistem.calisana_hizmet_ata(calisan_no, hizmet_no)
+        hizmet = sistem.calisana_hizmet_ata(calisan.id, hizmet_no)
         print(f"{hizmet.ad}, {calisan.ad} için eklendi.")
     except ValueError as hata:
         print(hata)
+
+
+def uygunluklari_goster(calisan):
+    if len(calisan.uygunluklar) == 0:
+        print("Henüz uygunluk eklenmedi.")
+        return
+
+    for uygunluk in calisan.uygunluklar:
+        print(f"{uygunluk.baslangic:%d.%m.%Y %H:%M} - {uygunluk.bitis:%H:%M}")
+
+
+def uygunluk_ekle_ekrani(sistem, yonetici):
+    calisan = calisan_sec(sistem, yonetici)
+
+    if calisan is None:
+        return
+
+    baslangic = tarih_saat_oku("Başlangıç (GG.AA.YYYY SS:DD): ")
+
+    if baslangic is None:
+        return
+
+    bitis = tarih_saat_oku("Bitiş (GG.AA.YYYY SS:DD): ")
+
+    if bitis is None:
+        return
+
+    try:
+        sistem.uygunluk_ekle(calisan.id, baslangic, bitis)
+        print("Uygunluk eklendi.")
+    except ValueError as hata:
+        print(hata)
+
+
+def uygunluk_listele_ekrani(sistem, yonetici):
+    calisan = calisan_sec(sistem, yonetici)
+
+    if calisan is not None:
+        uygunluklari_goster(calisan)
 
 
 def ilk_kurulum(sistem):
@@ -391,6 +451,8 @@ def yonetici_menu(sistem, yonetici):
         print("9 - Yönetici ekle")
         print("10 - Çalışana hizmet ata")
         print("11 - Kullanıcıları listele")
+        print("12 - Çalışan uygunluğu ekle")
+        print("13 - Çalışan uygunluklarını listele")
         print("0 - Kullanıcı değiştir")
         secim = input("Seçiminiz: ").strip()
 
@@ -416,6 +478,10 @@ def yonetici_menu(sistem, yonetici):
             hizmet_ata_ekrani(sistem, yonetici)
         elif secim == "11":
             kullanicilari_goster(sistem)
+        elif secim == "12":
+            uygunluk_ekle_ekrani(sistem, yonetici)
+        elif secim == "13":
+            uygunluk_listele_ekrani(sistem, yonetici)
         elif secim == "0":
             return
         else:
@@ -441,6 +507,7 @@ def calisan_menu(sistem, calisan):
     while True:
         print(f"\n{calisan.unvan()}: {calisan.ad}")
         print("1 - Kendi hizmetlerimi gör")
+        print("2 - Uygunluklarımı gör")
         print("0 - Kullanıcı değiştir")
         secim = input("Seçiminiz: ").strip()
 
@@ -454,6 +521,8 @@ def calisan_menu(sistem, calisan):
                 if hizmet.id in calisan.hizmet_idleri:
                     print(f"{hizmet.id} - {hizmet.ad}")
 
+        elif secim == "2":
+            uygunluklari_goster(calisan)
         elif secim == "0":
             return
         else:
