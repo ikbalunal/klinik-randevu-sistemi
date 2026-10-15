@@ -1,6 +1,6 @@
 from kurum import Bolum, Hizmet, Kurum, Sube
 from kisiler import Calisan, Doktor, Hasta, SaglikPersoneli, Yonetici
-from randevu import Uygunluk
+from randevu import Randevu, Uygunluk
 
 
 class KlinikSistemi:
@@ -12,6 +12,8 @@ class KlinikSistemi:
         self.son_hizmet_id = 0
         self.kullanicilar = []
         self.son_kullanici_id = 0
+        self.randevular = []
+        self.son_randevu_id = 0
 
     def kurumlari_listele(self):
         return self.kurumlar
@@ -46,6 +48,15 @@ class KlinikSistemi:
             for sube in kurum.subeler:
                 if sube.id == sube_id:
                     return sube
+
+        return None
+
+    def hizmeti_bul(self, hizmet_id):
+        for kurum in self.kurumlar:
+            for sube in kurum.subeler:
+                for hizmet in sube.hizmetler:
+                    if hizmet.id == hizmet_id:
+                        return hizmet
 
         return None
 
@@ -239,3 +250,71 @@ class KlinikSistemi:
                 return True
 
         return False
+
+    def randevu_olustur(self, hasta_id, calisan_id, hizmet_id, baslangic):
+        hasta = self.kullaniciyi_bul(hasta_id)
+
+        if not isinstance(hasta, Hasta):
+            raise ValueError("Hasta bulunamadı.")
+
+        calisan = self.calisani_bul(calisan_id)
+
+        if calisan is None:
+            raise ValueError("Çalışan bulunamadı.")
+
+        hizmet = self.hizmeti_bul(hizmet_id)
+
+        if hizmet is None:
+            raise ValueError("Hizmet bulunamadı.")
+
+        if hizmet.sube_id != calisan.sube_id:
+            raise ValueError("Hizmet çalışanın şubesinde bulunmuyor.")
+
+        if hizmet.id not in calisan.hizmet_idleri:
+            raise ValueError("Bu hizmet çalışana atanmamış.")
+
+        yeni_randevu = Randevu(
+            self.son_randevu_id + 1,
+            hasta.id,
+            calisan.id,
+            hizmet.id,
+            calisan.sube_id,
+            baslangic,
+            hizmet.sure_dakika,
+            hizmet.ucret_tl,
+        )
+
+        sube = self.sube_bul(calisan.sube_id)
+
+        if not sube.acik_mi(yeni_randevu.baslangic, yeni_randevu.bitis):
+            raise ValueError("Randevu şubenin çalışma saatleri dışında.")
+
+        if not self.calisan_uygun_mu(calisan.id, yeni_randevu.baslangic, yeni_randevu.bitis):
+            raise ValueError("Çalışan bu saatte uygun değil.")
+
+        for eski_randevu in self.calisanin_randevulari(calisan.id):
+            if eski_randevu.durum in ("beklemede", "onaylandi"):
+                if yeni_randevu.baslangic < eski_randevu.bitis and yeni_randevu.bitis > eski_randevu.baslangic:
+                    raise ValueError("Çalışanın bu saatte başka bir randevusu var.")
+
+        self.randevular.append(yeni_randevu)
+        self.son_randevu_id = yeni_randevu.id
+        return yeni_randevu
+
+    def hastanin_randevulari(self, hasta_id):
+        bulunanlar = []
+
+        for randevu in self.randevular:
+            if randevu.hasta_id == hasta_id:
+                bulunanlar.append(randevu)
+
+        return bulunanlar
+
+    def calisanin_randevulari(self, calisan_id):
+        bulunanlar = []
+
+        for randevu in self.randevular:
+            if randevu.calisan_id == calisan_id:
+                bulunanlar.append(randevu)
+
+        return bulunanlar

@@ -48,4 +48,6 @@ python main.py
 
 Uygunluk eklemeden önce şubenin o güne ait çalışma saatini ayarlayın. Tarih ve saati `25.10.2026 09:00` biçiminde girin. Uygunluk aynı gün içinde ve şubenin çalışma saatlerinde olmalıdır; aynı çalışanın aralıkları çakışamaz.
 
-Kullanıcı seçimi şu an parola kullanmaz. Veriler yalnızca program açıkken tutulur. Randevu işlemleri ve dosyaya kayıt sonraki adımlarda eklenecektir.
+Hasta menüsünden hizmeti, o hizmete atanmış çalışanı ve randevu zamanını seçebilirsiniz. Randevu, hizmet süresi boyunca şubenin çalışma saatleri ve çalışanın uygunluğu içinde kalmalıdır. Aynı çalışanın bekleyen randevuları da o saati kapatır. Hasta kendi randevularını, çalışan da kendisine ait randevuları görebilir.
+
+Kullanıcı seçimi şu an parola kullanmaz. Randevular beklemede durumuyla oluşturulur; onay işlemi henüz eklenmedi. Veriler yalnızca program açıkken tutulur.

@@ -382,6 +382,85 @@ def uygunluk_listele_ekrani(sistem, yonetici):
         uygunluklari_goster(calisan)
 
 
+def randevu_olustur_ekrani(sistem, hasta):
+    hizmet_var = False
+
+    for kurum in sistem.kurumlari_listele():
+        for sube in kurum.subeler:
+            for hizmet in sube.hizmetler:
+                print(f"{hizmet.id} - {kurum.ad} / {sube.ad} / {hizmet.ad}")
+                print(f"    {hizmet.sure_dakika} dakika, {hizmet.ucret_tl} TL")
+                hizmet_var = True
+
+    if not hizmet_var:
+        print("Henüz hizmet eklenmedi.")
+        return
+
+    hizmet_no = sayi_oku("Hizmet numarası: ")
+
+    if hizmet_no is None:
+        return
+
+    hizmet = sistem.hizmeti_bul(hizmet_no)
+
+    if hizmet is None:
+        print("Hizmet bulunamadı.")
+        return
+
+    calisan_var = False
+
+    for kullanici in sistem.kullanicilari_listele():
+        if isinstance(kullanici, Calisan):
+            if kullanici.sube_id == hizmet.sube_id and hizmet.id in kullanici.hizmet_idleri:
+                print(f"{kullanici.id} - {kullanici.ad} ({kullanici.unvan()})")
+                calisan_var = True
+
+    if not calisan_var:
+        print("Bu hizmet için çalışan bulunamadı.")
+        return
+
+    calisan_no = sayi_oku("Çalışan numarası: ")
+
+    if calisan_no is None:
+        return
+
+    calisan = sistem.calisani_bul(calisan_no)
+
+    if calisan is None:
+        print("Çalışan bulunamadı.")
+        return
+
+    if calisan.sube_id != hizmet.sube_id or hizmet.id not in calisan.hizmet_idleri:
+        print("Bu hizmet bu çalışana atanmamış.")
+        return
+
+    print("Çalışanın uygunlukları:")
+    uygunluklari_goster(calisan)
+
+    baslangic = tarih_saat_oku("Randevu zamanı (GG.AA.YYYY SS:DD): ")
+
+    if baslangic is None:
+        return
+
+    try:
+        randevu = sistem.randevu_olustur(hasta.id, calisan_no, hizmet.id, baslangic)
+        print(f"Randevu {randevu.id} oluşturuldu. Durum: {randevu.durum}.")
+    except ValueError as hata:
+        print(hata)
+
+
+def randevulari_goster(sistem, randevular):
+    if len(randevular) == 0:
+        print("Henüz randevu yok.")
+        return
+
+    for randevu in randevular:
+        hizmet = sistem.hizmeti_bul(randevu.hizmet_id)
+        calisan = sistem.calisani_bul(randevu.calisan_id)
+        print(f"{randevu.id} - {randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}")
+        print(f"    {hizmet.ad}, {calisan.ad}, {randevu.ucret_tl} TL, {randevu.durum}")
+
+
 def ilk_kurulum(sistem):
     while True:
         print("\nİlk kurulum")
@@ -492,11 +571,17 @@ def hasta_menu(sistem, hasta):
     while True:
         print(f"\nHasta: {hasta.ad}")
         print("1 - Kurum ve şubeleri listele")
+        print("2 - Randevu oluştur")
+        print("3 - Randevularımı gör")
         print("0 - Kullanıcı değiştir")
         secim = input("Seçiminiz: ").strip()
 
         if secim == "1":
             kurumlari_goster(sistem)
+        elif secim == "2":
+            randevu_olustur_ekrani(sistem, hasta)
+        elif secim == "3":
+            randevulari_goster(sistem, sistem.hastanin_randevulari(hasta.id))
         elif secim == "0":
             return
         else:
@@ -508,6 +593,7 @@ def calisan_menu(sistem, calisan):
         print(f"\n{calisan.unvan()}: {calisan.ad}")
         print("1 - Kendi hizmetlerimi gör")
         print("2 - Uygunluklarımı gör")
+        print("3 - Randevularımı gör")
         print("0 - Kullanıcı değiştir")
         secim = input("Seçiminiz: ").strip()
 
@@ -523,6 +609,8 @@ def calisan_menu(sistem, calisan):
 
         elif secim == "2":
             uygunluklari_goster(calisan)
+        elif secim == "3":
+            randevulari_goster(sistem, sistem.calisanin_randevulari(calisan.id))
         elif secim == "0":
             return
         else:
