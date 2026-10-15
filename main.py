@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime
 
+from kisiler import Calisan, Doktor, Hasta, Yonetici
 from sistem import KlinikSistemi
 
 
@@ -63,7 +64,7 @@ def saat_oku(soru):
         return None
 
 
-def sube_sec(sistem):
+def sube_sec(sistem, yonetici):
     sube_sayisi = 0
 
     for kurum in sistem.kurumlari_listele():
@@ -83,6 +84,11 @@ def sube_sec(sistem):
 
     if sube is None:
         print("Şube bulunamadı.")
+        return None
+
+    if sube.kurum_id != yonetici.kurum_id:
+        print("Bu şube başka bir kuruma ait.")
+        return None
 
     return sube
 
@@ -97,32 +103,18 @@ def kurum_ekle_ekrani(sistem):
         print(hata)
 
 
-def sube_ekle_ekrani(sistem):
-    if len(sistem.kurumlari_listele()) == 0:
-        print("Önce bir kurum ekleyin.")
-        return
-
-    kurumlari_goster(sistem)
-    kurum_no = sayi_oku("Kurum numarası: ")
-
-    if kurum_no is None:
-        return
-
-    if sistem.kurumu_bul(kurum_no) is None:
-        print("Kurum bulunamadı.")
-        return
-
+def sube_ekle_ekrani(sistem, yonetici):
     ad = input("Şube adı: ")
 
     try:
-        sube = sistem.sube_ekle(kurum_no, ad)
+        sube = sistem.sube_ekle(yonetici.kurum_id, ad)
         print(f"{sube.ad} eklendi.")
     except ValueError as hata:
         print(hata)
 
 
-def bolum_ekle_ekrani(sistem):
-    sube = sube_sec(sistem)
+def bolum_ekle_ekrani(sistem, yonetici):
+    sube = sube_sec(sistem, yonetici)
 
     if sube is None:
         return
@@ -136,8 +128,8 @@ def bolum_ekle_ekrani(sistem):
         print(hata)
 
 
-def hizmet_ekle_ekrani(sistem):
-    sube = sube_sec(sistem)
+def hizmet_ekle_ekrani(sistem, yonetici):
+    sube = sube_sec(sistem, yonetici)
 
     if sube is None:
         return
@@ -180,8 +172,8 @@ def hizmet_ekle_ekrani(sistem):
         print(hata)
 
 
-def calisma_saati_ekrani(sistem):
-    sube = sube_sec(sistem)
+def calisma_saati_ekrani(sistem, yonetici):
+    sube = sube_sec(sistem, yonetici)
 
     if sube is None:
         return
@@ -210,47 +202,289 @@ def calisma_saati_ekrani(sistem):
         print(hata)
 
 
+def kullanicilari_goster(sistem):
+    if len(sistem.kullanicilari_listele()) == 0:
+        print("Henüz kayıtlı kullanıcı yok.")
+        return
+
+    for kullanici in sistem.kullanicilari_listele():
+        bilgi = f"{kullanici.id} - {kullanici.ad} ({kullanici.unvan()})"
+
+        if isinstance(kullanici, Doktor):
+            bilgi += f", şube {kullanici.sube_id}, {kullanici.uzmanlik}"
+        elif isinstance(kullanici, Calisan):
+            bilgi += f", şube {kullanici.sube_id}"
+        elif isinstance(kullanici, Yonetici):
+            bilgi += f", kurum {kullanici.kurum_id}"
+
+        print(bilgi)
+
+
+def hasta_ekle_ekrani(sistem):
+    ad = input("Hasta adı: ")
+
+    try:
+        hasta = sistem.hasta_ekle(ad)
+        print(f"{hasta.ad} eklendi.")
+    except ValueError as hata:
+        print(hata)
+
+
+def doktor_ekle_ekrani(sistem, yonetici):
+    sube = sube_sec(sistem, yonetici)
+
+    if sube is None:
+        return
+
+    ad = input("Doktor adı: ")
+    uzmanlik = input("Uzmanlık alanı: ")
+
+    try:
+        doktor = sistem.doktor_ekle(ad, sube.id, uzmanlik)
+        print(f"{doktor.ad} eklendi.")
+    except ValueError as hata:
+        print(hata)
+
+
+def personel_ekle_ekrani(sistem, yonetici):
+    sube = sube_sec(sistem, yonetici)
+
+    if sube is None:
+        return
+
+    ad = input("Sağlık personeli adı: ")
+
+    try:
+        personel = sistem.personel_ekle(ad, sube.id)
+        print(f"{personel.ad} eklendi.")
+    except ValueError as hata:
+        print(hata)
+
+
+def yonetici_ekle_ekrani(sistem, kurum_id):
+    ad = input("Yönetici adı: ")
+
+    try:
+        yonetici = sistem.yonetici_ekle(ad, kurum_id)
+        print(f"{yonetici.ad} eklendi.")
+    except ValueError as hata:
+        print(hata)
+
+
+def hizmet_ata_ekrani(sistem, yonetici):
+    calisan_var = False
+
+    for kullanici in sistem.kullanicilari_listele():
+        if isinstance(kullanici, Calisan):
+            sube = sistem.sube_bul(kullanici.sube_id)
+
+            if sube.kurum_id == yonetici.kurum_id:
+                print(f"{kullanici.id} - {kullanici.ad} ({kullanici.unvan()})")
+                calisan_var = True
+
+    if not calisan_var:
+        print("Önce çalışan ekleyin.")
+        return
+
+    calisan_no = sayi_oku("Çalışan numarası: ")
+
+    if calisan_no is None:
+        return
+
+    calisan = sistem.calisani_bul(calisan_no)
+
+    if calisan is None:
+        print("Çalışan bulunamadı.")
+        return
+
+    sube = sistem.sube_bul(calisan.sube_id)
+
+    if sube.kurum_id != yonetici.kurum_id:
+        print("Bu çalışan başka bir kuruma ait.")
+        return
+
+    if len(sube.hizmetler) == 0:
+        print("Önce çalışanın şubesine hizmet ekleyin.")
+        return
+
+    for hizmet in sube.hizmetler:
+        print(f"{hizmet.id} - {hizmet.ad}")
+
+    hizmet_no = sayi_oku("Hizmet numarası: ")
+
+    if hizmet_no is None:
+        return
+
+    try:
+        hizmet = sistem.calisana_hizmet_ata(calisan_no, hizmet_no)
+        print(f"{hizmet.ad}, {calisan.ad} için eklendi.")
+    except ValueError as hata:
+        print(hata)
+
+
+def ilk_kurulum(sistem):
+    while True:
+        print("\nİlk kurulum")
+        print("1 - Kurum ekle")
+        print("2 - Yönetici ekle")
+        print("0 - Çıkış")
+        secim = input("Seçiminiz: ").strip()
+
+        if secim == "1":
+            kurum_ekle_ekrani(sistem)
+
+        elif secim == "2":
+            if len(sistem.kurumlari_listele()) == 0:
+                print("Önce bir kurum ekleyin.")
+                continue
+
+            kurumlari_goster(sistem)
+            kurum_no = sayi_oku("Kurum numarası: ")
+
+            if kurum_no is None:
+                continue
+
+            if sistem.kurumu_bul(kurum_no) is None:
+                print("Kurum bulunamadı.")
+                continue
+
+            yonetici_ekle_ekrani(sistem, kurum_no)
+
+            for kullanici in sistem.kullanicilari_listele():
+                if isinstance(kullanici, Yonetici):
+                    return True
+
+        elif secim == "0":
+            return False
+
+        else:
+            print("Geçersiz seçim.")
+
+
+def kullanici_sec(sistem):
+    print("\nKullanıcı seçin")
+    kullanicilari_goster(sistem)
+    kullanici_no = sayi_oku("Kullanıcı numarası (0 çıkış): ")
+
+    if kullanici_no is None or kullanici_no == 0:
+        return kullanici_no
+
+    kullanici = sistem.kullaniciyi_bul(kullanici_no)
+
+    if kullanici is None:
+        print("Kullanıcı bulunamadı.")
+
+    return kullanici
+
+
+def yonetici_menu(sistem, yonetici):
+    while True:
+        print(f"\nYönetici: {yonetici.ad}")
+        print("1 - Kurum ve şubeleri listele")
+        print("2 - Şube ekle")
+        print("3 - Bölüm ekle")
+        print("4 - Hizmet ekle")
+        print("5 - Çalışma saati ayarla")
+        print("6 - Hasta ekle")
+        print("7 - Doktor ekle")
+        print("8 - Sağlık personeli ekle")
+        print("9 - Yönetici ekle")
+        print("10 - Çalışana hizmet ata")
+        print("11 - Kullanıcıları listele")
+        print("0 - Kullanıcı değiştir")
+        secim = input("Seçiminiz: ").strip()
+
+        if secim == "1":
+            kurumlari_goster(sistem)
+        elif secim == "2":
+            sube_ekle_ekrani(sistem, yonetici)
+        elif secim == "3":
+            bolum_ekle_ekrani(sistem, yonetici)
+        elif secim == "4":
+            hizmet_ekle_ekrani(sistem, yonetici)
+        elif secim == "5":
+            calisma_saati_ekrani(sistem, yonetici)
+        elif secim == "6":
+            hasta_ekle_ekrani(sistem)
+        elif secim == "7":
+            doktor_ekle_ekrani(sistem, yonetici)
+        elif secim == "8":
+            personel_ekle_ekrani(sistem, yonetici)
+        elif secim == "9":
+            yonetici_ekle_ekrani(sistem, yonetici.kurum_id)
+        elif secim == "10":
+            hizmet_ata_ekrani(sistem, yonetici)
+        elif secim == "11":
+            kullanicilari_goster(sistem)
+        elif secim == "0":
+            return
+        else:
+            print("Geçersiz seçim.")
+
+
+def hasta_menu(sistem, hasta):
+    while True:
+        print(f"\nHasta: {hasta.ad}")
+        print("1 - Kurum ve şubeleri listele")
+        print("0 - Kullanıcı değiştir")
+        secim = input("Seçiminiz: ").strip()
+
+        if secim == "1":
+            kurumlari_goster(sistem)
+        elif secim == "0":
+            return
+        else:
+            print("Geçersiz seçim.")
+
+
+def calisan_menu(sistem, calisan):
+    while True:
+        print(f"\n{calisan.unvan()}: {calisan.ad}")
+        print("1 - Kendi hizmetlerimi gör")
+        print("0 - Kullanıcı değiştir")
+        secim = input("Seçiminiz: ").strip()
+
+        if secim == "1":
+            sube = sistem.sube_bul(calisan.sube_id)
+
+            if len(calisan.hizmet_idleri) == 0:
+                print("Henüz hizmet atanmadı.")
+
+            for hizmet in sube.hizmetler:
+                if hizmet.id in calisan.hizmet_idleri:
+                    print(f"{hizmet.id} - {hizmet.ad}")
+
+        elif secim == "0":
+            return
+        else:
+            print("Geçersiz seçim.")
+
+
 def main():
     # yönlendirilmiş çıktıda türkçe harfler bozulmasın
     sys.stdout.reconfigure(encoding="utf-8")
     sistem = KlinikSistemi()
 
+    if not ilk_kurulum(sistem):
+        print("Görüşmek üzere.")
+        return
+
     while True:
-        print("\nKlinik Randevu Sistemi")
-        print("1 - Kurum ve şubeleri listele")
-        print("2 - Kurum ekle")
-        print("3 - Şube ekle")
-        print("4 - Bölüm ekle")
-        print("5 - Hizmet ekle")
-        print("6 - Çalışma saati ayarla")
-        print("0 - Çıkış")
+        kullanici = kullanici_sec(sistem)
 
-        secim = input("Seçiminiz: ").strip()
-
-        if secim == "1":
-            kurumlari_goster(sistem)
-
-        elif secim == "2":
-            kurum_ekle_ekrani(sistem)
-
-        elif secim == "3":
-            sube_ekle_ekrani(sistem)
-
-        elif secim == "4":
-            bolum_ekle_ekrani(sistem)
-
-        elif secim == "5":
-            hizmet_ekle_ekrani(sistem)
-
-        elif secim == "6":
-            calisma_saati_ekrani(sistem)
-
-        elif secim == "0":
+        if kullanici == 0:
             print("Görüşmek üzere.")
             break
 
-        else:
-            print("Geçersiz seçim. Menüdeki numaralardan birini yazın.")
+        if kullanici is None:
+            continue
+
+        if isinstance(kullanici, Yonetici):
+            yonetici_menu(sistem, kullanici)
+        elif isinstance(kullanici, Hasta):
+            hasta_menu(sistem, kullanici)
+        elif isinstance(kullanici, Calisan):
+            calisan_menu(sistem, kullanici)
 
 
 if __name__ == "__main__":

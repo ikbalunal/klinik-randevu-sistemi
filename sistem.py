@@ -1,4 +1,5 @@
 from kurum import Bolum, Hizmet, Kurum, Sube
+from kisiler import Calisan, Doktor, Hasta, SaglikPersoneli, Yonetici
 
 
 class KlinikSistemi:
@@ -8,9 +9,29 @@ class KlinikSistemi:
         self.son_sube_id = 0
         self.son_bolum_id = 0
         self.son_hizmet_id = 0
+        self.kullanicilar = []
+        self.son_kullanici_id = 0
 
     def kurumlari_listele(self):
         return self.kurumlar
+
+    def kullanicilari_listele(self):
+        return self.kullanicilar
+
+    def kullaniciyi_bul(self, kullanici_id):
+        for kullanici in self.kullanicilar:
+            if kullanici.id == kullanici_id:
+                return kullanici
+
+        return None
+
+    def calisani_bul(self, calisan_id):
+        kullanici = self.kullaniciyi_bul(calisan_id)
+
+        if isinstance(kullanici, Calisan):
+            return kullanici
+
+        return None
 
     def kurumu_bul(self, kurum_id):
         for kurum in self.kurumlar:
@@ -106,3 +127,78 @@ class KlinikSistemi:
             raise ValueError("Şube bulunamadı.")
 
         sube.calisma_saati_ayarla(gun, acilis, kapanis)
+
+    def hasta_ekle(self, ad):
+        ad = ad.strip()
+
+        if ad == "":
+            raise ValueError("Hasta adı boş olamaz.")
+
+        self.son_kullanici_id += 1
+        hasta = Hasta(self.son_kullanici_id, ad)
+        self.kullanicilar.append(hasta)
+        return hasta
+
+    def doktor_ekle(self, ad, sube_id, uzmanlik):
+        sube = self.sube_bul(sube_id)
+
+        if sube is None:
+            raise ValueError("Şube bulunamadı.")
+
+        ad = ad.strip()
+        uzmanlik = uzmanlik.strip()
+
+        if ad == "" or uzmanlik == "":
+            raise ValueError("Ad ve uzmanlık boş olamaz.")
+
+        self.son_kullanici_id += 1
+        doktor = Doktor(self.son_kullanici_id, ad, sube_id, uzmanlik)
+        self.kullanicilar.append(doktor)
+        return doktor
+
+    def personel_ekle(self, ad, sube_id):
+        sube = self.sube_bul(sube_id)
+
+        if sube is None:
+            raise ValueError("Şube bulunamadı.")
+
+        ad = ad.strip()
+
+        if ad == "":
+            raise ValueError("Çalışan adı boş olamaz.")
+
+        self.son_kullanici_id += 1
+        personel = SaglikPersoneli(self.son_kullanici_id, ad, sube_id)
+        self.kullanicilar.append(personel)
+        return personel
+
+    def yonetici_ekle(self, ad, kurum_id):
+        kurum = self.kurumu_bul(kurum_id)
+
+        if kurum is None:
+            raise ValueError("Kurum bulunamadı.")
+
+        ad = ad.strip()
+
+        if ad == "":
+            raise ValueError("Yönetici adı boş olamaz.")
+
+        self.son_kullanici_id += 1
+        yonetici = Yonetici(self.son_kullanici_id, ad, kurum_id)
+        self.kullanicilar.append(yonetici)
+        return yonetici
+
+    def calisana_hizmet_ata(self, calisan_id, hizmet_id):
+        calisan = self.calisani_bul(calisan_id)
+
+        if calisan is None:
+            raise ValueError("Çalışan bulunamadı.")
+
+        sube = self.sube_bul(calisan.sube_id)
+
+        for hizmet in sube.hizmetler:
+            if hizmet.id == hizmet_id:
+                calisan.hizmet_ekle(hizmet_id)
+                return hizmet
+
+        raise ValueError("Hizmet çalışanın şubesinde bulunamadı.")

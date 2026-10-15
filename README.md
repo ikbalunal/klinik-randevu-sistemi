@@ -44,4 +44,6 @@ Python kuruluysa bu klasörde şu komutu çalıştırın:
 python main.py
 ```
 
-Şu an kurum, şube, bölüm ve hizmet eklenebilir. Her şubenin haftalık çalışma saatleri ayarlanabilir; kayıtlar menüden listelenebilir. Veriler henüz yalnızca program açıkken tutulur. Diğer işlemler sırayla eklenecektir.
+İlk açılışta bir kurum ve yönetici oluşturulur. Yönetici şube, bölüm, hizmet, çalışma saati ve kişi kayıtlarını ekleyebilir; çalışanlara kendi şubelerindeki hizmetleri atayabilir. Hasta ve çalışan için ayrı menüler vardır.
+
+Kullanıcı seçimi şu an parola kullanmaz. Veriler yalnızca program açıkken tutulur. Randevu işlemleri ve dosyaya kayıt sonraki adımlarda eklenecektir.
