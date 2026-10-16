@@ -50,4 +50,6 @@ Uygunluk eklemeden önce şubenin o güne ait çalışma saatini ayarlayın. Tar
 
 Hasta menüsünden hizmeti, o hizmete atanmış çalışanı ve randevu zamanını seçebilirsiniz. Randevu, hizmet süresi boyunca şubenin çalışma saatleri ve çalışanın uygunluğu içinde kalmalıdır. Aynı çalışanın bekleyen randevuları da o saati kapatır. Hasta kendi randevularını, çalışan da kendisine ait randevuları görebilir.
 
-Kullanıcı seçimi şu an parola kullanmaz. Randevular beklemede durumuyla oluşturulur; onay işlemi henüz eklenmedi. Veriler yalnızca program açıkken tutulur.
+Yönetici kendi kurumundaki bekleyen randevuları listeleyip onaylayabilir. Başka kurumun randevusu onaylanamaz; onaylanan randevu ikinci kez onaylanamaz. Onaylanan randevu da çalışanın saatini kapatır.
+
+Kullanıcı seçimi şu an parola kullanmaz. Veriler yalnızca program açıkken tutulur.

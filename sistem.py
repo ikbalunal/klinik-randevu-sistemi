@@ -318,3 +318,37 @@ class KlinikSistemi:
                 bulunanlar.append(randevu)
 
         return bulunanlar
+
+    def bekleyen_randevulari(self, yonetici_id):
+        yonetici = self.kullaniciyi_bul(yonetici_id)
+
+        if not isinstance(yonetici, Yonetici):
+            raise ValueError("Yönetici bulunamadı.")
+
+        bulunanlar = []
+
+        for randevu in self.randevular:
+            sube = self.sube_bul(randevu.sube_id)
+
+            if sube.kurum_id == yonetici.kurum_id and randevu.durum == "beklemede":
+                bulunanlar.append(randevu)
+
+        return bulunanlar
+
+    def randevu_onayla(self, yonetici_id, randevu_id):
+        yonetici = self.kullaniciyi_bul(yonetici_id)
+
+        if not isinstance(yonetici, Yonetici):
+            raise ValueError("Yönetici bulunamadı.")
+
+        for randevu in self.randevular:
+            if randevu.id == randevu_id:
+                sube = self.sube_bul(randevu.sube_id)
+
+                if sube.kurum_id != yonetici.kurum_id:
+                    raise ValueError("Bu randevu başka bir kuruma ait.")
+
+                randevu.onayla()
+                return randevu
+
+        raise ValueError("Randevu bulunamadı.")

@@ -38,3 +38,9 @@ class Randevu:
         self.ucret_tl = ucret_tl
         self.bitis = baslangic + timedelta(minutes=sure_dakika)
         self.durum = "beklemede"
+
+    def onayla(self):
+        if self.durum != "beklemede":
+            raise ValueError("Bu randevu beklemede değil.")
+
+        self.durum = "onaylandi"

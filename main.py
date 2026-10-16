@@ -457,8 +457,39 @@ def randevulari_goster(sistem, randevular):
     for randevu in randevular:
         hizmet = sistem.hizmeti_bul(randevu.hizmet_id)
         calisan = sistem.calisani_bul(randevu.calisan_id)
+        hasta = sistem.kullaniciyi_bul(randevu.hasta_id)
         print(f"{randevu.id} - {randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}")
-        print(f"    {hizmet.ad}, {calisan.ad}, {randevu.ucret_tl} TL, {randevu.durum}")
+        print(f"    {hizmet.ad}, {calisan.ad}, hasta: {hasta.ad}, {randevu.ucret_tl} TL, {randevu.durum}")
+
+
+def bekleyen_randevulari_goster(sistem, yonetici):
+    randevular = sistem.bekleyen_randevulari(yonetici.id)
+
+    if len(randevular) == 0:
+        print("Bekleyen randevu yok.")
+        return
+
+    randevulari_goster(sistem, randevular)
+
+
+def randevu_onay_ekrani(sistem, yonetici):
+    randevular = sistem.bekleyen_randevulari(yonetici.id)
+
+    if len(randevular) == 0:
+        print("Bekleyen randevu yok.")
+        return
+
+    randevulari_goster(sistem, randevular)
+    randevu_no = sayi_oku("Onaylanacak randevu numarası: ")
+
+    if randevu_no is None:
+        return
+
+    try:
+        randevu = sistem.randevu_onayla(yonetici.id, randevu_no)
+        print(f"Randevu {randevu.id} onaylandı.")
+    except ValueError as hata:
+        print(hata)
 
 
 def ilk_kurulum(sistem):
@@ -532,6 +563,8 @@ def yonetici_menu(sistem, yonetici):
         print("11 - Kullanıcıları listele")
         print("12 - Çalışan uygunluğu ekle")
         print("13 - Çalışan uygunluklarını listele")
+        print("14 - Bekleyen randevuları listele")
+        print("15 - Randevu onayla")
         print("0 - Kullanıcı değiştir")
         secim = input("Seçiminiz: ").strip()
 
@@ -561,6 +594,10 @@ def yonetici_menu(sistem, yonetici):
             uygunluk_ekle_ekrani(sistem, yonetici)
         elif secim == "13":
             uygunluk_listele_ekrani(sistem, yonetici)
+        elif secim == "14":
+            bekleyen_randevulari_goster(sistem, yonetici)
+        elif secim == "15":
+            randevu_onay_ekrani(sistem, yonetici)
         elif secim == "0":
             return
         else:
