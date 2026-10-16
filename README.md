@@ -52,4 +52,10 @@ Hasta menüsünden hizmeti, o hizmete atanmış çalışanı ve randevu zamanın
 
 Yönetici kendi kurumundaki bekleyen randevuları listeleyip onaylayabilir. Başka kurumun randevusu onaylanamaz; onaylanan randevu ikinci kez onaylanamaz. Onaylanan randevu da çalışanın saatini kapatır.
 
-Kullanıcı seçimi şu an parola kullanmaz. Veriler yalnızca program açıkken tutulur.
+Kullanıcı seçimi şu an parola kullanmaz.
+
+## Verileri saklama
+
+Başarılı değişiklikler programın bulunduğu klasördeki `veriler.json` dosyasına kaydedilir. Program yeniden açıldığında kurumlar, kişiler, uygunluklar ve randevular bu dosyadan yüklenir. Bu dosya ve yazma sırasında kullanılan `veriler.json.tmp` Git'e eklenmez.
+
+Veri dosyası okunamıyorsa program kısa bir hata gösterip açılışı durdurur. Dosya kendiliğinden silinmez veya üzerine boş kayıt yazılmaz.

@@ -6,6 +6,8 @@
 # Python dosyaları
 __pycache__/
 *.pyc
+veriler.json
+veriler.json.tmp
 
 # Editör ve işletim sistemi dosyaları
 .vscode/

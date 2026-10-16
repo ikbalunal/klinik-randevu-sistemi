@@ -1,8 +1,9 @@
 import sys
 from datetime import datetime
+from pathlib import Path
 
+from depolama import kaydet, yukle
 from kisiler import Calisan, Doktor, Hasta, Yonetici
-from sistem import KlinikSistemi
 
 
 GUN_ADLARI = {
@@ -14,6 +15,15 @@ GUN_ADLARI = {
     6: "Cumartesi",
     7: "Pazar",
 }
+VERI_DOSYASI = Path(__file__).with_name("veriler.json")
+
+
+def verileri_kaydet(sistem):
+    try:
+        kaydet(sistem, VERI_DOSYASI)
+    except OSError as hata:
+        print(f"Veriler kaydedilemedi: {hata}")
+        raise SystemExit(1)
 
 
 def kurumlari_goster(sistem):
@@ -108,6 +118,7 @@ def kurum_ekle_ekrani(sistem):
 
     try:
         kurum = sistem.kurum_ekle(ad)
+        verileri_kaydet(sistem)
         print(f"{kurum.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -118,6 +129,7 @@ def sube_ekle_ekrani(sistem, yonetici):
 
     try:
         sube = sistem.sube_ekle(yonetici.kurum_id, ad)
+        verileri_kaydet(sistem)
         print(f"{sube.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -133,6 +145,7 @@ def bolum_ekle_ekrani(sistem, yonetici):
 
     try:
         bolum = sistem.bolum_ekle(sube.id, ad)
+        verileri_kaydet(sistem)
         print(f"{bolum.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -177,6 +190,7 @@ def hizmet_ekle_ekrani(sistem, yonetici):
 
     try:
         hizmet = sistem.hizmet_ekle(sube.id, bolum_no, ad, sure, ucret)
+        verileri_kaydet(sistem)
         print(f"{hizmet.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -207,6 +221,7 @@ def calisma_saati_ekrani(sistem, yonetici):
 
     try:
         sistem.calisma_saati_ayarla(sube.id, gun, acilis, kapanis)
+        verileri_kaydet(sistem)
         print("Çalışma saati kaydedildi.")
     except ValueError as hata:
         print(hata)
@@ -235,6 +250,7 @@ def hasta_ekle_ekrani(sistem):
 
     try:
         hasta = sistem.hasta_ekle(ad)
+        verileri_kaydet(sistem)
         print(f"{hasta.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -251,6 +267,7 @@ def doktor_ekle_ekrani(sistem, yonetici):
 
     try:
         doktor = sistem.doktor_ekle(ad, sube.id, uzmanlik)
+        verileri_kaydet(sistem)
         print(f"{doktor.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -266,6 +283,7 @@ def personel_ekle_ekrani(sistem, yonetici):
 
     try:
         personel = sistem.personel_ekle(ad, sube.id)
+        verileri_kaydet(sistem)
         print(f"{personel.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -276,6 +294,7 @@ def yonetici_ekle_ekrani(sistem, kurum_id):
 
     try:
         yonetici = sistem.yonetici_ekle(ad, kurum_id)
+        verileri_kaydet(sistem)
         print(f"{yonetici.ad} eklendi.")
     except ValueError as hata:
         print(hata)
@@ -338,6 +357,7 @@ def hizmet_ata_ekrani(sistem, yonetici):
 
     try:
         hizmet = sistem.calisana_hizmet_ata(calisan.id, hizmet_no)
+        verileri_kaydet(sistem)
         print(f"{hizmet.ad}, {calisan.ad} için eklendi.")
     except ValueError as hata:
         print(hata)
@@ -370,6 +390,7 @@ def uygunluk_ekle_ekrani(sistem, yonetici):
 
     try:
         sistem.uygunluk_ekle(calisan.id, baslangic, bitis)
+        verileri_kaydet(sistem)
         print("Uygunluk eklendi.")
     except ValueError as hata:
         print(hata)
@@ -444,6 +465,7 @@ def randevu_olustur_ekrani(sistem, hasta):
 
     try:
         randevu = sistem.randevu_olustur(hasta.id, calisan_no, hizmet.id, baslangic)
+        verileri_kaydet(sistem)
         print(f"Randevu {randevu.id} oluşturuldu. Durum: {randevu.durum}.")
     except ValueError as hata:
         print(hata)
@@ -487,6 +509,7 @@ def randevu_onay_ekrani(sistem, yonetici):
 
     try:
         randevu = sistem.randevu_onayla(yonetici.id, randevu_no)
+        verileri_kaydet(sistem)
         print(f"Randevu {randevu.id} onaylandı.")
     except ValueError as hata:
         print(hata)
@@ -657,11 +680,23 @@ def calisan_menu(sistem, calisan):
 def main():
     # yönlendirilmiş çıktıda türkçe harfler bozulmasın
     sys.stdout.reconfigure(encoding="utf-8")
-    sistem = KlinikSistemi()
-
-    if not ilk_kurulum(sistem):
-        print("Görüşmek üzere.")
+    try:
+        sistem = yukle(VERI_DOSYASI)
+    except ValueError as hata:
+        print(hata)
         return
+
+    yonetici_var = False
+
+    for kullanici in sistem.kullanicilari_listele():
+        if isinstance(kullanici, Yonetici):
+            yonetici_var = True
+            break
+
+    if not yonetici_var:
+        if not ilk_kurulum(sistem):
+            print("Görüşmek üzere.")
+            return
 
     while True:
         kullanici = kullanici_sec(sistem)
