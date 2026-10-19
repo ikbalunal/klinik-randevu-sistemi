@@ -46,6 +46,8 @@ python main.py
 
 İlk açılışta bir kurum ve yönetici oluşturulur. Yönetici şube, bölüm, hizmet, çalışma saati ve kişi kayıtlarını ekleyebilir; çalışanlara kendi şubelerindeki hizmetleri atayabilir. Yönetici, çalışanın uygun olduğu tarih ve saat aralıklarını da ekleyip listeleyebilir. Çalışan kendi uygunluklarını görebilir. Hasta ve çalışan için ayrı menüler vardır.
 
+Kayıtlı bir yönetici, menüden yeni bir kurum ve o kurumun yöneticisini oluşturabilir. Yeni yönetici kullanıcı seçiminden seçilerek kendi kurumuna şube ekleyebilir.
+
 Uygunluk eklemeden önce şubenin o güne ait çalışma saatini ayarlayın. Tarih ve saati `25.10.2026 09:00` biçiminde girin. Uygunluk aynı gün içinde ve şubenin çalışma saatlerinde olmalıdır; aynı çalışanın aralıkları çakışamaz.
 
 Hasta menüsünden hizmeti, o hizmete atanmış çalışanı ve randevu zamanını seçebilirsiniz. Randevu, hizmet süresi boyunca şubenin çalışma saatleri ve çalışanın uygunluğu içinde kalmalıdır. Aynı çalışanın bekleyen randevuları da o saati kapatır. Hasta kendi randevularını, çalışan da kendisine ait randevuları görebilir.

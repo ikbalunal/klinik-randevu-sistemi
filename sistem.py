@@ -71,6 +71,19 @@ class KlinikSistemi:
         self.kurumlar.append(kurum)
         return kurum
 
+    def yeni_kurum_ve_yonetici_ekle(self, olusturan_yonetici_id, kurum_adi, yonetici_adi):
+        olusturan = self.kullaniciyi_bul(olusturan_yonetici_id)
+
+        if not isinstance(olusturan, Yonetici):
+            raise ValueError("Bu işlem için yönetici seçilmeli.")
+
+        if kurum_adi.strip() == "" or yonetici_adi.strip() == "":
+            raise ValueError("Kurum ve yönetici adı boş olamaz.")
+
+        kurum = self.kurum_ekle(kurum_adi)
+        yonetici = self.yonetici_ekle(yonetici_adi, kurum.id)
+        return kurum, yonetici
+
     def sube_ekle(self, kurum_id, ad):
         kurum = self.kurumu_bul(kurum_id)
 

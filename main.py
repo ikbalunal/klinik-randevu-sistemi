@@ -124,6 +124,20 @@ def kurum_ekle_ekrani(sistem):
         print(hata)
 
 
+def yeni_kurum_ekrani(sistem, yonetici):
+    kurum_adi = input("Yeni kurum adı: ")
+    yonetici_adi = input("Yeni kurumun yöneticisi: ")
+
+    try:
+        kurum, yeni_yonetici = sistem.yeni_kurum_ve_yonetici_ekle(
+            yonetici.id, kurum_adi, yonetici_adi
+        )
+        verileri_kaydet(sistem)
+        print(f"{kurum.ad} eklendi. Yönetici: {yeni_yonetici.ad} (numara {yeni_yonetici.id}).")
+    except ValueError as hata:
+        print(hata)
+
+
 def sube_ekle_ekrani(sistem, yonetici):
     ad = input("Şube adı: ")
 
@@ -588,6 +602,7 @@ def yonetici_menu(sistem, yonetici):
         print("13 - Çalışan uygunluklarını listele")
         print("14 - Bekleyen randevuları listele")
         print("15 - Randevu onayla")
+        print("16 - Yeni kurum ekle")
         print("0 - Kullanıcı değiştir")
         secim = input("Seçiminiz: ").strip()
 
@@ -621,6 +636,8 @@ def yonetici_menu(sistem, yonetici):
             bekleyen_randevulari_goster(sistem, yonetici)
         elif secim == "15":
             randevu_onay_ekrani(sistem, yonetici)
+        elif secim == "16":
+            yeni_kurum_ekrani(sistem, yonetici)
         elif secim == "0":
             return
         else:
