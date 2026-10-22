@@ -50,7 +50,7 @@ Kayıtlı bir yönetici, menüden yeni bir kurum ve o kurumun yöneticisini olu�
 
 Uygunluk eklemeden önce şubenin o güne ait çalışma saatini ayarlayın. Tarih ve saati `25.10.2026 09:00` biçiminde girin. Uygunluk aynı gün içinde ve şubenin çalışma saatlerinde olmalıdır; aynı çalışanın aralıkları çakışamaz.
 
-Hasta menüsünden hizmeti, o hizmete atanmış çalışanı ve randevu zamanını seçebilirsiniz. Çalışanı seçince uygunluk aralıkları ve dolu randevu saatleri ayrı görünür. Randevu, hizmet süresi boyunca şubenin çalışma saatleri ve çalışanın uygunluğu içinde kalmalıdır. Aynı çalışanın bekleyen randevuları da o saati kapatır. Hasta kendi randevularını, çalışan da kendisine ait randevuları görebilir.
+Hasta menüsünden hizmeti, o hizmete atanmış çalışanı ve randevu zamanını seçebilirsiniz. Çalışanı seçince uygunluk aralıkları, dolu randevu saatleri ve seçilen hizmetin süresine yetecek boş aralıklar ayrı görünür. Her boş aralığın altında randevuya en geç kaçta başlanabileceği de yazılır. Başlangıç saatini bu sınırlar içinde seçebilirsiniz. Randevu, hizmet süresi boyunca şubenin çalışma saatleri ve çalışanın uygunluğu içinde kalmalıdır. Aynı çalışanın bekleyen randevuları da o saati kapatır. Hasta kendi randevularını, çalışan da kendisine ait randevuları görebilir.
 
 Yönetici kendi kurumundaki bekleyen randevuları listeleyip onaylayabilir. Başka kurumun randevusu onaylanamaz; onaylanan randevu ikinci kez onaylanamaz. Onaylanan randevu da çalışanın saatini kapatır.
 

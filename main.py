@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from depolama import kaydet, yukle
@@ -485,6 +485,18 @@ def randevu_olustur_ekrani(sistem, hasta):
     print("Çalışanın uygunluk aralıkları:")
     uygunluklari_goster(calisan)
     dolu_saatleri_goster(sistem, calisan)
+
+    bos_araliklar = sistem.bos_randevu_araliklari(calisan.id, hizmet.id)
+    print(f"{hizmet.sure_dakika} dakikalık randevu için boş aralıklar:")
+
+    if len(bos_araliklar) == 0:
+        print("Bu hizmet için boş aralık yok.")
+        return
+
+    for bos_baslangic, bos_bitis in bos_araliklar:
+        son_baslangic = bos_bitis - timedelta(minutes=hizmet.sure_dakika)
+        print(f"{bos_baslangic:%d.%m.%Y %H:%M} - {bos_bitis:%H:%M}")
+        print(f"    en geç {son_baslangic:%H:%M} saatinde başlanabilir")
 
     baslangic = tarih_saat_oku("Randevu zamanı (GG.AA.YYYY SS:DD): ")
 

@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from kurum import Bolum, Hizmet, Kurum, Sube
 from kisiler import Calisan, Doktor, Hasta, SaglikPersoneli, Yonetici
 from randevu import Randevu, Uygunluk
@@ -263,6 +265,65 @@ class KlinikSistemi:
                 return True
 
         return False
+
+    def bos_randevu_araliklari(self, calisan_id, hizmet_id):
+        calisan = self.calisani_bul(calisan_id)
+        hizmet = self.hizmeti_bul(hizmet_id)
+
+        if calisan is None:
+            raise ValueError("Çalışan bulunamadı.")
+
+        if hizmet is None:
+            raise ValueError("Hizmet bulunamadı.")
+
+        if hizmet.sube_id != calisan.sube_id or hizmet.id not in calisan.hizmet_idleri:
+            raise ValueError("Bu hizmet bu çalışana atanmamış.")
+
+        sube = self.sube_bul(calisan.sube_id)
+        sonuc = []
+        hizmet_suresi = timedelta(minutes=hizmet.sure_dakika)
+
+        for uygunluk in calisan.uygunluklar:
+            gun = uygunluk.baslangic.isoweekday()
+
+            if gun not in sube.calisma_saatleri:
+                continue
+
+            acilis, kapanis = sube.calisma_saatleri[gun]
+            acilis_zamani = datetime.combine(uygunluk.baslangic.date(), acilis)
+            kapanis_zamani = datetime.combine(uygunluk.baslangic.date(), kapanis)
+            baslangic = max(uygunluk.baslangic, acilis_zamani)
+            bitis = min(uygunluk.bitis, kapanis_zamani)
+
+            if baslangic >= bitis:
+                continue
+
+            bos_araliklar = [(baslangic, bitis)]
+
+            for randevu in self.calisanin_randevulari(calisan.id):
+                if randevu.durum not in ("beklemede", "onaylandi"):
+                    continue
+
+                kalan_araliklar = []
+
+                for bos_baslangic, bos_bitis in bos_araliklar:
+                    if randevu.baslangic < bos_bitis and randevu.bitis > bos_baslangic:
+                        if bos_baslangic < randevu.baslangic:
+                            kalan_araliklar.append((bos_baslangic, randevu.baslangic))
+
+                        if randevu.bitis < bos_bitis:
+                            kalan_araliklar.append((randevu.bitis, bos_bitis))
+                    else:
+                        kalan_araliklar.append((bos_baslangic, bos_bitis))
+
+                bos_araliklar = kalan_araliklar
+
+            for bos_baslangic, bos_bitis in bos_araliklar:
+                if bos_bitis - bos_baslangic >= hizmet_suresi:
+                    sonuc.append((bos_baslangic, bos_bitis))
+
+        sonuc.sort()
+        return sonuc
 
     def randevu_olustur(self, hasta_id, calisan_id, hizmet_id, baslangic):
         hasta = self.kullaniciyi_bul(hasta_id)
