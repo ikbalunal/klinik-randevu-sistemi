@@ -386,6 +386,19 @@ def uygunluklari_goster(calisan):
         print(f"{uygunluk.baslangic:%d.%m.%Y %H:%M} - {uygunluk.bitis:%H:%M}")
 
 
+def dolu_saatleri_goster(sistem, calisan):
+    print("Dolu randevu saatleri:")
+    dolu_saat_var = False
+
+    for randevu in sistem.calisanin_randevulari(calisan.id):
+        if randevu.durum in ("beklemede", "onaylandi"):
+            print(f"{randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}")
+            dolu_saat_var = True
+
+    if not dolu_saat_var:
+        print("Dolu saat yok.")
+
+
 def uygunluk_ekle_ekrani(sistem, yonetici):
     calisan = calisan_sec(sistem, yonetici)
 
@@ -469,8 +482,9 @@ def randevu_olustur_ekrani(sistem, hasta):
         print("Bu hizmet bu çalışana atanmamış.")
         return
 
-    print("Çalışanın uygunlukları:")
+    print("Çalışanın uygunluk aralıkları:")
     uygunluklari_goster(calisan)
+    dolu_saatleri_goster(sistem, calisan)
 
     baslangic = tarih_saat_oku("Randevu zamanı (GG.AA.YYYY SS:DD): ")
 
