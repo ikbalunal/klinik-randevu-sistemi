@@ -10,8 +10,16 @@ class Uygunluk:
             raise ValueError("Uygunluk aynı gün içinde olmalı.")
 
         self.calisan_id = calisan_id
-        self.baslangic = baslangic
-        self.bitis = bitis
+        self._baslangic = baslangic
+        self._bitis = bitis
+
+    @property
+    def baslangic(self):
+        return self._baslangic
+
+    @property
+    def bitis(self):
+        return self._bitis
 
     def kapsar(self, baslangic, bitis):
         if baslangic >= bitis or baslangic.date() != bitis.date():
