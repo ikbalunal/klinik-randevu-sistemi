@@ -75,8 +75,7 @@ class Bolum:
 
 class Hizmet:
     def __init__(self, id, sube_id, bolum_id, ad, sure_dakika, ucret_tl):
-        if sure_dakika <= 0:
-            raise ValueError("Hizmet süresi sıfırdan büyük olmalı.")
+        self.sure_dakika = sure_dakika
 
         if ucret_tl < 0:
             raise ValueError("Hizmet ücreti negatif olamaz.")
@@ -85,5 +84,15 @@ class Hizmet:
         self.sube_id = sube_id
         self.bolum_id = bolum_id
         self.ad = ad
-        self.sure_dakika = sure_dakika
         self.ucret_tl = ucret_tl
+
+    @property
+    def sure_dakika(self):
+        return self._sure_dakika
+
+    @sure_dakika.setter
+    def sure_dakika(self, yeni_sure):
+        if yeni_sure <= 0:
+            raise ValueError("Hizmet süresi sıfırdan büyük olmalı.")
+
+        self._sure_dakika = yeni_sure
