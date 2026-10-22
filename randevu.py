@@ -33,11 +33,23 @@ class Randevu:
         self.calisan_id = calisan_id
         self.hizmet_id = hizmet_id
         self.sube_id = sube_id
-        self.baslangic = baslangic
-        self.sure_dakika = sure_dakika
+        self._baslangic = baslangic
+        self._sure_dakika = sure_dakika
         self.ucret_tl = ucret_tl
-        self.bitis = baslangic + timedelta(minutes=sure_dakika)
+        self._bitis = baslangic + timedelta(minutes=sure_dakika)
         self.durum = "beklemede"
+
+    @property
+    def baslangic(self):
+        return self._baslangic
+
+    @property
+    def sure_dakika(self):
+        return self._sure_dakika
+
+    @property
+    def bitis(self):
+        return self._bitis
 
     def onayla(self):
         if self.durum != "beklemede":
