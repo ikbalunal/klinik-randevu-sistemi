@@ -364,7 +364,7 @@ class KlinikSistemi:
             raise ValueError("Randevu şubenin çalışma saatleri dışında.")
 
         if not self.calisan_uygun_mu(calisan.id, yeni_randevu.baslangic, yeni_randevu.bitis):
-            raise ValueError("Çalışan bu saatte uygun değil.")
+            raise ValueError("Randevu süresi çalışanın uygun saatlerine sığmıyor.")
 
         for eski_randevu in self.calisanin_randevulari(calisan.id):
             if eski_randevu.durum in ("beklemede", "onaylandi"):
