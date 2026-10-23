@@ -34,17 +34,25 @@ Klinik ve hastanelerin hizmetlerini, çalışanlarını, uygunluk saatlerini ve 
 
 ## Teknik yaklaşım
 
-Uygulama Python ile konsolda çalışır. Sınıf yapısı, kapsülleme, kalıtım ve çok biçimlilik ilkeleri geliştirme sırasında kullanılacaktır.
+Uygulama Python ile konsolda çalışır. Sınıf yapısı, kapsülleme, kalıtım ve çok biçimlilik kullanılır.
 
 ## Çalıştırma
 
-Python kuruluysa bu klasörde şu komutu çalıştırın:
+Python 3.8 veya üzeri gerekir. Ek paket kurulumu yoktur. Bu klasörde şu komutu çalıştırın:
 
 ```text
 python main.py
 ```
 
-İlk açılışta bir kurum ve yönetici oluşturulur. Yönetici şube, bölüm, hizmet, çalışma saati ve kişi kayıtlarını ekleyebilir; çalışanlara kendi şubelerindeki hizmetleri atayabilir. Yönetici, çalışanın uygun olduğu tarih ve saat aralıklarını da ekleyip listeleyebilir. Çalışan kendi uygunluklarını görebilir. Hasta ve çalışan için ayrı menüler vardır.
+Program Python 3.14.3 ile çalıştırılarak kontrol edildi.
+
+## Kullanım sırası
+
+1. İlk açılışta `Kurum ekle`, ardından `Yönetici ekle` seçeneklerini kullanın.
+2. Kullanıcı listesinden yöneticiyi seçin. Şube, bölüm, hizmet ve çalışma saatini ekleyin. Doktor veya sağlık personeli ekleyip çalışana hizmet atayın. Sonra çalışan uygunluğunu ve hastayı ekleyin.
+3. `0 - Kullanıcı değiştir` ile hasta hesabını seçin. `Randevu oluştur` bölümünde hizmeti, çalışanı ve boş aralıktaki başlangıç saatini girin.
+4. Yönetici hesabına dönüp bekleyen randevuyu listeleyin ve onaylayın. Çalışan hesabından kendi uygunlukları ve randevuları görülebilir.
+5. Bir roldeki `0` seçeneği kullanıcı listesine döner. Kullanıcı listesindeki `0` programı kapatır.
 
 Kayıtlı bir yönetici, menüden yeni bir kurum ve o kurumun yöneticisini oluşturabilir. Yeni yönetici kullanıcı seçiminden seçilerek kendi kurumuna şube ekleyebilir.
 
@@ -58,6 +66,6 @@ Kullanıcı seçimi şu an parola kullanmaz.
 
 ## Verileri saklama
 
-Başarılı değişiklikler programın bulunduğu klasördeki `veriler.json` dosyasına kaydedilir. Program yeniden açıldığında kurumlar, kişiler, uygunluklar ve randevular bu dosyadan yüklenir. Bu dosya ve yazma sırasında kullanılan `veriler.json.tmp` Git'e eklenmez.
+Başarılı değişiklikler `main.py` ile aynı klasördeki `veriler.json` dosyasına kaydedilir. Program yeniden açıldığında kurumlar, kişiler, uygunluklar ve randevular bu dosyadan yüklenir. Bu dosya ve yazma sırasında kullanılan `veriler.json.tmp` Git'e eklenmez.
 
 Veri dosyası okunamıyorsa program kısa bir hata gösterip açılışı durdurur. Dosya kendiliğinden silinmez veya üzerine boş kayıt yazılmaz.
