@@ -96,65 +96,66 @@ def verileri_kaydet(sistem):
     try:
         kaydet(sistem, VERI_DOSYASI)
     except OSError as hata:
-        print(f"Veriler kaydedilemedi: {hata}")
+        durum_yaz(f"Veriler kaydedilemedi: {hata}", "hata")
         raise SystemExit(1)
 
 
 def kurumlari_goster(sistem):
     kurumlar = sistem.kurumlari_listele()
+    liste_basligi("Kurumlar ve şubeler")
 
     if len(kurumlar) == 0:
-        print("Henüz kayıtlı kurum yok.")
+        durum_yaz("Henüz kayıtlı kurum yok.")
         return
 
     for kurum in kurumlar:
-        print(f"{kurum.id} - {kurum.ad}")
+        liste_satiri(kurum.id, kurum.ad)
 
         if len(kurum.subeler) == 0:
-            print("  Şube eklenmemiş.")
+            print("       Şube eklenmemiş.")
         else:
             for sube in kurum.subeler:
-                print(f"  {sube.id} - {sube.ad}")
+                print(f"       ↳ {renkli(str(sube.id), 'secim')}  {sube.ad}")
 
                 for gun in sorted(sube.calisma_saatleri):
                     acilis, kapanis = sube.calisma_saatleri[gun]
-                    print(f"    {GUN_ADLARI[gun]}: {acilis:%H:%M} - {kapanis:%H:%M}")
+                    print(f"           {GUN_ADLARI[gun]}: {acilis:%H:%M} - {kapanis:%H:%M}")
 
                 for bolum in sube.bolumler:
-                    print(f"    Bölüm {bolum.id}: {bolum.ad}")
+                    print(f"           Bölüm {bolum.id}: {bolum.ad}")
 
                 for hizmet in sube.hizmetler:
-                    print(f"    Hizmet {hizmet.id}: {hizmet.ad} (bölüm {hizmet.bolum_id})")
-                    print(f"      {hizmet.sure_dakika} dakika, {hizmet.ucret_tl} TL")
+                    print(f"           Hizmet {hizmet.id}: {hizmet.ad} (bölüm {hizmet.bolum_id})")
+                    print(f"             {hizmet.sure_dakika} dakika · {hizmet.ucret_tl} TL")
 
 
 def sayi_oku(soru):
-    giris = input(soru).strip()
+    giris = girdi_oku(soru).strip()
 
     if not giris.isdigit():
-        print("Geçerli bir sayı yazın.")
+        durum_yaz("Geçerli bir sayı yazın.", "hata")
         return None
 
     return int(giris)
 
 
 def saat_oku(soru):
-    giris = input(soru).strip()
+    giris = girdi_oku(soru).strip()
 
     try:
         return datetime.strptime(giris, "%H:%M").time()
     except ValueError:
-        print("Saati 09:00 gibi yazın.")
+        durum_yaz("Saati 09:00 gibi yazın.", "hata")
         return None
 
 
 def tarih_saat_oku(soru):
-    giris = input(soru).strip()
+    giris = girdi_oku(soru).strip()
 
     try:
         return datetime.strptime(giris, "%d.%m.%Y %H:%M")
     except ValueError:
-        print("Tarih ve saati 25.10.2026 09:00 gibi yazın.")
+        durum_yaz("Tarih ve saati 25.10.2026 09:00 gibi yazın.", "hata")
         return None
 
 
@@ -165,7 +166,7 @@ def sube_sec(sistem, yonetici):
         sube_sayisi += len(kurum.subeler)
 
     if sube_sayisi == 0:
-        print("Önce bir şube ekleyin.")
+        durum_yaz("Önce bir şube ekleyin.")
         return None
 
     kurumlari_goster(sistem)
@@ -177,50 +178,51 @@ def sube_sec(sistem, yonetici):
     sube = sistem.sube_bul(sube_no)
 
     if sube is None:
-        print("Şube bulunamadı.")
+        durum_yaz("Şube bulunamadı.", "hata")
         return None
 
     if sube.kurum_id != yonetici.kurum_id:
-        print("Bu şube başka bir kuruma ait.")
+        durum_yaz("Bu şube başka bir kuruma ait.", "hata")
         return None
 
     return sube
 
 
 def kurum_ekle_ekrani(sistem):
-    ad = input("Kurum adı: ")
+    ad = girdi_oku("Kurum adı: ")
 
     try:
         kurum = sistem.kurum_ekle(ad)
         verileri_kaydet(sistem)
-        print(f"{kurum.ad} eklendi.")
+        durum_yaz(f"{kurum.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def yeni_kurum_ekrani(sistem, yonetici):
-    kurum_adi = input("Yeni kurum adı: ")
-    yonetici_adi = input("Yeni kurumun yöneticisi: ")
+    kurum_adi = girdi_oku("Yeni kurum adı: ")
+    yonetici_adi = girdi_oku("Yeni kurumun yöneticisi: ")
 
     try:
         kurum, yeni_yonetici = sistem.yeni_kurum_ve_yonetici_ekle(
             yonetici.id, kurum_adi, yonetici_adi
         )
         verileri_kaydet(sistem)
-        print(f"{kurum.ad} eklendi. Yönetici: {yeni_yonetici.ad} (numara {yeni_yonetici.id}).")
+        mesaj = f"{kurum.ad} eklendi. Yönetici: {yeni_yonetici.ad}"
+        durum_yaz(f"{mesaj} (numara {yeni_yonetici.id}).", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def sube_ekle_ekrani(sistem, yonetici):
-    ad = input("Şube adı: ")
+    ad = girdi_oku("Şube adı: ")
 
     try:
         sube = sistem.sube_ekle(yonetici.kurum_id, ad)
         verileri_kaydet(sistem)
-        print(f"{sube.ad} eklendi.")
+        durum_yaz(f"{sube.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def bolum_ekle_ekrani(sistem, yonetici):
@@ -229,14 +231,14 @@ def bolum_ekle_ekrani(sistem, yonetici):
     if sube is None:
         return
 
-    ad = input("Bölüm adı: ")
+    ad = girdi_oku("Bölüm adı: ")
 
     try:
         bolum = sistem.bolum_ekle(sube.id, ad)
         verileri_kaydet(sistem)
-        print(f"{bolum.ad} eklendi.")
+        durum_yaz(f"{bolum.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def hizmet_ekle_ekrani(sistem, yonetici):
@@ -246,8 +248,12 @@ def hizmet_ekle_ekrani(sistem, yonetici):
         return
 
     if len(sube.bolumler) == 0:
-        print("Önce bu şubeye bölüm ekleyin.")
+        durum_yaz("Önce bu şubeye bölüm ekleyin.")
         return
+
+    liste_basligi("Bu şubenin bölümleri")
+    for bolum in sube.bolumler:
+        liste_satiri(bolum.id, bolum.ad)
 
     bolum_no = sayi_oku("Bölüm numarası: ")
 
@@ -262,10 +268,10 @@ def hizmet_ekle_ekrani(sistem, yonetici):
             break
 
     if not bolum_bulundu:
-        print("Bölüm bu şubede bulunamadı.")
+        durum_yaz("Bölüm bu şubede bulunamadı.", "hata")
         return
 
-    ad = input("Hizmet adı: ")
+    ad = girdi_oku("Hizmet adı: ")
     sure = sayi_oku("Süre (dakika): ")
 
     if sure is None:
@@ -279,9 +285,9 @@ def hizmet_ekle_ekrani(sistem, yonetici):
     try:
         hizmet = sistem.hizmet_ekle(sube.id, bolum_no, ad, sure, ucret)
         verileri_kaydet(sistem)
-        print(f"{hizmet.ad} eklendi.")
+        durum_yaz(f"{hizmet.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def calisma_saati_ekrani(sistem, yonetici):
@@ -290,8 +296,9 @@ def calisma_saati_ekrani(sistem, yonetici):
     if sube is None:
         return
 
-    print("Günler: 1 Pazartesi, 2 Salı, 3 Çarşamba, 4 Perşembe")
-    print("       5 Cuma, 6 Cumartesi, 7 Pazar")
+    liste_basligi("Haftanın günleri")
+    for gun_numarasi, gun_adi in GUN_ADLARI.items():
+        liste_satiri(gun_numarasi, gun_adi)
     gun = sayi_oku("Gün numarası: ")
 
     if gun is None:
@@ -310,38 +317,41 @@ def calisma_saati_ekrani(sistem, yonetici):
     try:
         sistem.calisma_saati_ayarla(sube.id, gun, acilis, kapanis)
         verileri_kaydet(sistem)
-        print("Çalışma saati kaydedildi.")
+        durum_yaz("Çalışma saati kaydedildi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def kullanicilari_goster(sistem):
+    liste_basligi("Kullanıcılar")
+
     if len(sistem.kullanicilari_listele()) == 0:
-        print("Henüz kayıtlı kullanıcı yok.")
+        durum_yaz("Henüz kayıtlı kullanıcı yok.")
         return
 
     for kullanici in sistem.kullanicilari_listele():
-        bilgi = f"{kullanici.id} - {kullanici.ad} ({kullanici.unvan()})"
+        bilgi = f"{kullanici.ad}  ·  {kullanici.unvan()}"
+        ayrinti = ""
 
         if isinstance(kullanici, Doktor):
-            bilgi += f", şube {kullanici.sube_id}, {kullanici.uzmanlik}"
+            ayrinti = f"Şube {kullanici.sube_id} · {kullanici.uzmanlik}"
         elif isinstance(kullanici, Calisan):
-            bilgi += f", şube {kullanici.sube_id}"
+            ayrinti = f"Şube {kullanici.sube_id}"
         elif isinstance(kullanici, Yonetici):
-            bilgi += f", kurum {kullanici.kurum_id}"
+            ayrinti = f"Kurum {kullanici.kurum_id}"
 
-        print(bilgi)
+        liste_satiri(kullanici.id, bilgi, ayrinti)
 
 
 def hasta_ekle_ekrani(sistem):
-    ad = input("Hasta adı: ")
+    ad = girdi_oku("Hasta adı: ")
 
     try:
         hasta = sistem.hasta_ekle(ad)
         verileri_kaydet(sistem)
-        print(f"{hasta.ad} eklendi.")
+        durum_yaz(f"{hasta.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def doktor_ekle_ekrani(sistem, yonetici):
@@ -350,15 +360,15 @@ def doktor_ekle_ekrani(sistem, yonetici):
     if sube is None:
         return
 
-    ad = input("Doktor adı: ")
-    uzmanlik = input("Uzmanlık alanı: ")
+    ad = girdi_oku("Doktor adı: ")
+    uzmanlik = girdi_oku("Uzmanlık alanı: ")
 
     try:
         doktor = sistem.doktor_ekle(ad, sube.id, uzmanlik)
         verileri_kaydet(sistem)
-        print(f"{doktor.ad} eklendi.")
+        durum_yaz(f"{doktor.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def personel_ekle_ekrani(sistem, yonetici):
@@ -367,40 +377,42 @@ def personel_ekle_ekrani(sistem, yonetici):
     if sube is None:
         return
 
-    ad = input("Sağlık personeli adı: ")
+    ad = girdi_oku("Sağlık personeli adı: ")
 
     try:
         personel = sistem.personel_ekle(ad, sube.id)
         verileri_kaydet(sistem)
-        print(f"{personel.ad} eklendi.")
+        durum_yaz(f"{personel.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def yonetici_ekle_ekrani(sistem, kurum_id):
-    ad = input("Yönetici adı: ")
+    ad = girdi_oku("Yönetici adı: ")
 
     try:
         yonetici = sistem.yonetici_ekle(ad, kurum_id)
         verileri_kaydet(sistem)
-        print(f"{yonetici.ad} eklendi.")
+        durum_yaz(f"{yonetici.ad} eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def calisan_sec(sistem, yonetici):
     calisan_var = False
+    liste_basligi("Çalışanlar")
 
     for kullanici in sistem.kullanicilari_listele():
         if isinstance(kullanici, Calisan):
             sube = sistem.sube_bul(kullanici.sube_id)
 
             if sube.kurum_id == yonetici.kurum_id:
-                print(f"{kullanici.id} - {kullanici.ad} ({kullanici.unvan()})")
+                bilgi = f"{kullanici.ad}  ·  {kullanici.unvan()}"
+                liste_satiri(kullanici.id, bilgi, sube.ad)
                 calisan_var = True
 
     if not calisan_var:
-        print("Önce çalışan ekleyin.")
+        durum_yaz("Önce çalışan ekleyin.")
         return None
 
     calisan_no = sayi_oku("Çalışan numarası: ")
@@ -411,13 +423,13 @@ def calisan_sec(sistem, yonetici):
     calisan = sistem.calisani_bul(calisan_no)
 
     if calisan is None:
-        print("Çalışan bulunamadı.")
+        durum_yaz("Çalışan bulunamadı.", "hata")
         return None
 
     sube = sistem.sube_bul(calisan.sube_id)
 
     if sube.kurum_id != yonetici.kurum_id:
-        print("Bu çalışan başka bir kuruma ait.")
+        durum_yaz("Bu çalışan başka bir kuruma ait.", "hata")
         return None
 
     return calisan
@@ -432,11 +444,14 @@ def hizmet_ata_ekrani(sistem, yonetici):
     sube = sistem.sube_bul(calisan.sube_id)
 
     if len(sube.hizmetler) == 0:
-        print("Önce çalışanın şubesine hizmet ekleyin.")
+        durum_yaz("Önce çalışanın şubesine hizmet ekleyin.")
         return
 
+    liste_basligi("Bu şubenin hizmetleri")
+
     for hizmet in sube.hizmetler:
-        print(f"{hizmet.id} - {hizmet.ad}")
+        ayrinti = f"{hizmet.sure_dakika} dakika · {hizmet.ucret_tl} TL"
+        liste_satiri(hizmet.id, hizmet.ad, ayrinti)
 
     hizmet_no = sayi_oku("Hizmet numarası: ")
 
@@ -446,31 +461,35 @@ def hizmet_ata_ekrani(sistem, yonetici):
     try:
         hizmet = sistem.calisana_hizmet_ata(calisan.id, hizmet_no)
         verileri_kaydet(sistem)
-        print(f"{hizmet.ad}, {calisan.ad} için eklendi.")
+        durum_yaz(f"{hizmet.ad}, {calisan.ad} için eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def uygunluklari_goster(calisan):
+    liste_basligi("Uygunluk aralıkları")
+
     if len(calisan.uygunluklar) == 0:
-        print("Henüz uygunluk eklenmedi.")
+        durum_yaz("Henüz uygunluk eklenmedi.")
         return
 
-    for uygunluk in calisan.uygunluklar:
-        print(f"{uygunluk.baslangic:%d.%m.%Y %H:%M} - {uygunluk.bitis:%H:%M}")
+    for numara, uygunluk in enumerate(calisan.uygunluklar, start=1):
+        aralik = f"{uygunluk.baslangic:%d.%m.%Y %H:%M} - {uygunluk.bitis:%H:%M}"
+        liste_satiri(numara, aralik)
 
 
 def dolu_saatleri_goster(sistem, calisan):
-    print("Dolu randevu saatleri:")
+    liste_basligi("Dolu randevu saatleri:")
     dolu_saat_var = False
 
     for randevu in sistem.calisanin_randevulari(calisan.id):
         if randevu.durum in ("beklemede", "onaylandi"):
-            print(f"{randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}")
+            aralik = f"{randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}"
+            liste_satiri(randevu.id, aralik)
             dolu_saat_var = True
 
     if not dolu_saat_var:
-        print("Dolu saat yok.")
+        durum_yaz("Dolu saat yok.")
 
 
 def uygunluk_ekle_ekrani(sistem, yonetici):
@@ -492,9 +511,9 @@ def uygunluk_ekle_ekrani(sistem, yonetici):
     try:
         sistem.uygunluk_ekle(calisan.id, baslangic, bitis)
         verileri_kaydet(sistem)
-        print("Uygunluk eklendi.")
+        durum_yaz("Uygunluk eklendi.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def uygunluk_listele_ekrani(sistem, yonetici):
@@ -506,16 +525,18 @@ def uygunluk_listele_ekrani(sistem, yonetici):
 
 def randevu_olustur_ekrani(sistem, hasta):
     hizmet_var = False
+    liste_basligi("Hizmet seçin")
 
     for kurum in sistem.kurumlari_listele():
         for sube in kurum.subeler:
             for hizmet in sube.hizmetler:
-                print(f"{hizmet.id} - {kurum.ad} / {sube.ad} / {hizmet.ad}")
-                print(f"    {hizmet.sure_dakika} dakika, {hizmet.ucret_tl} TL")
+                ad = f"{kurum.ad} / {sube.ad} / {hizmet.ad}"
+                ayrinti = f"{hizmet.sure_dakika} dakika · {hizmet.ucret_tl} TL"
+                liste_satiri(hizmet.id, ad, ayrinti)
                 hizmet_var = True
 
     if not hizmet_var:
-        print("Henüz hizmet eklenmedi.")
+        durum_yaz("Henüz hizmet eklenmedi.")
         return
 
     hizmet_no = sayi_oku("Hizmet numarası: ")
@@ -526,19 +547,20 @@ def randevu_olustur_ekrani(sistem, hasta):
     hizmet = sistem.hizmeti_bul(hizmet_no)
 
     if hizmet is None:
-        print("Hizmet bulunamadı.")
+        durum_yaz("Hizmet bulunamadı.", "hata")
         return
 
     calisan_var = False
+    liste_basligi("Çalışan seçin")
 
     for kullanici in sistem.kullanicilari_listele():
         if isinstance(kullanici, Calisan):
             if kullanici.sube_id == hizmet.sube_id and hizmet.id in kullanici.hizmet_idleri:
-                print(f"{kullanici.id} - {kullanici.ad} ({kullanici.unvan()})")
+                liste_satiri(kullanici.id, kullanici.ad, kullanici.unvan())
                 calisan_var = True
 
     if not calisan_var:
-        print("Bu hizmet için çalışan bulunamadı.")
+        durum_yaz("Bu hizmet için çalışan bulunamadı.")
         return
 
     calisan_no = sayi_oku("Çalışan numarası: ")
@@ -549,28 +571,27 @@ def randevu_olustur_ekrani(sistem, hasta):
     calisan = sistem.calisani_bul(calisan_no)
 
     if calisan is None:
-        print("Çalışan bulunamadı.")
+        durum_yaz("Çalışan bulunamadı.", "hata")
         return
 
     if calisan.sube_id != hizmet.sube_id or hizmet.id not in calisan.hizmet_idleri:
-        print("Bu hizmet bu çalışana atanmamış.")
+        durum_yaz("Bu hizmet bu çalışana atanmamış.", "hata")
         return
 
-    print("Çalışanın uygunluk aralıkları:")
     uygunluklari_goster(calisan)
     dolu_saatleri_goster(sistem, calisan)
 
     bos_araliklar = sistem.bos_randevu_araliklari(calisan.id, hizmet.id)
-    print(f"{hizmet.sure_dakika} dakikalık randevu için boş aralıklar:")
+    liste_basligi(f"{hizmet.sure_dakika} dakikalık randevu için boş aralıklar:")
 
     if len(bos_araliklar) == 0:
-        print("Bu hizmet için boş aralık yok.")
+        durum_yaz("Bu hizmet için boş aralık yok.")
         return
 
     for bos_baslangic, bos_bitis in bos_araliklar:
         son_baslangic = bos_bitis - timedelta(minutes=hizmet.sure_dakika)
-        print(f"{bos_baslangic:%d.%m.%Y %H:%M} - {bos_bitis:%H:%M}")
-        print(f"    en geç {son_baslangic:%H:%M} saatinde başlanabilir")
+        aralik = f"{bos_baslangic:%d.%m.%Y %H:%M} - {bos_bitis:%H:%M}"
+        liste_satiri("•", aralik, f"en geç {son_baslangic:%H:%M} saatinde başlanabilir")
 
     baslangic = tarih_saat_oku("Randevu zamanı (GG.AA.YYYY SS:DD): ")
 
@@ -580,29 +601,33 @@ def randevu_olustur_ekrani(sistem, hasta):
     try:
         randevu = sistem.randevu_olustur(hasta.id, calisan_no, hizmet.id, baslangic)
         verileri_kaydet(sistem)
-        print(f"Randevu {randevu.id} oluşturuldu. Durum: {randevu.durum}.")
+        durum_yaz(f"Randevu {randevu.id} oluşturuldu. Durum: {randevu.durum}.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def randevulari_goster(sistem, randevular):
+    liste_basligi("Randevular")
+
     if len(randevular) == 0:
-        print("Henüz randevu yok.")
+        durum_yaz("Henüz randevu yok.")
         return
 
     for randevu in randevular:
         hizmet = sistem.hizmeti_bul(randevu.hizmet_id)
         calisan = sistem.calisani_bul(randevu.calisan_id)
         hasta = sistem.kullaniciyi_bul(randevu.hasta_id)
-        print(f"{randevu.id} - {randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}")
-        print(f"    {hizmet.ad}, {calisan.ad}, hasta: {hasta.ad}, {randevu.ucret_tl} TL, {randevu.durum}")
+        zaman = f"{randevu.baslangic:%d.%m.%Y %H:%M} - {randevu.bitis:%H:%M}"
+        bilgi = f"{hizmet.ad} · {calisan.ad} · hasta: {hasta.ad}"
+        ayrinti = f"{bilgi} · {randevu.ucret_tl} TL · {randevu.durum}"
+        liste_satiri(randevu.id, zaman, ayrinti)
 
 
 def bekleyen_randevulari_goster(sistem, yonetici):
     randevular = sistem.bekleyen_randevulari(yonetici.id)
 
     if len(randevular) == 0:
-        print("Bekleyen randevu yok.")
+        durum_yaz("Bekleyen randevu yok.")
         return
 
     randevulari_goster(sistem, randevular)
@@ -612,7 +637,7 @@ def randevu_onay_ekrani(sistem, yonetici):
     randevular = sistem.bekleyen_randevulari(yonetici.id)
 
     if len(randevular) == 0:
-        print("Bekleyen randevu yok.")
+        durum_yaz("Bekleyen randevu yok.")
         return
 
     randevulari_goster(sistem, randevular)
@@ -624,9 +649,9 @@ def randevu_onay_ekrani(sistem, yonetici):
     try:
         randevu = sistem.randevu_onayla(yonetici.id, randevu_no)
         verileri_kaydet(sistem)
-        print(f"Randevu {randevu.id} onaylandı.")
+        durum_yaz(f"Randevu {randevu.id} onaylandı.", "basari")
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
 
 
 def ilk_kurulum(sistem):
@@ -805,7 +830,7 @@ def main():
     try:
         sistem = yukle(VERI_DOSYASI)
     except ValueError as hata:
-        print(hata)
+        durum_yaz(str(hata), "hata")
         return
 
     yonetici_var = False
@@ -817,14 +842,14 @@ def main():
 
     if not yonetici_var:
         if not ilk_kurulum(sistem):
-            print("Görüşmek üzere.")
+            durum_yaz("Görüşmek üzere.")
             return
 
     while True:
         kullanici = kullanici_sec(sistem)
 
         if kullanici == 0:
-            print("Görüşmek üzere.")
+            durum_yaz("Görüşmek üzere.")
             break
 
         if kullanici is None:

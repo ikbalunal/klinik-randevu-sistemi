@@ -46,6 +46,8 @@ python main.py
 
 Program Python 3.14.3 ile çalıştırılarak kontrol edildi.
 
+Menülerde numarayı yazıp Enter'a basın. Listelerde kurum, şube, hizmet, çalışan ve randevu numaraları görünür. Renk destekli terminallerde başlıklar ve durum mesajları hafif renkli gösterilir.
+
 ## Kullanım sırası
 
 1. İlk açılışta `Kurum ekle`, ardından `Yönetici ekle` seçeneklerini kullanın.
