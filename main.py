@@ -1,3 +1,4 @@
+import shutil
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -16,6 +17,79 @@ GUN_ADLARI = {
     7: "Pazar",
 }
 VERI_DOSYASI = Path(__file__).with_name("veriler.json")
+
+
+def renkli(metin, renk):
+    if not sys.stdout.isatty():
+        return metin
+
+    renkler = {
+        "baslik": "\033[1;36m",
+        "secim": "\033[36m",
+        "basari": "\033[32m",
+        "hata": "\033[31m",
+    }
+    return f"{renkler[renk]}{metin}\033[0m"
+
+
+def cizgi():
+    genislik = shutil.get_terminal_size((64, 20)).columns - 4
+
+    if genislik > 60:
+        genislik = 60
+    if genislik < 20:
+        genislik = 20
+
+    return "─" * genislik
+
+
+def baslik_goster(baslik, aciklama=""):
+    print()
+    print("  " + renkli(cizgi(), "secim"))
+    print("  " + renkli(baslik, "baslik"))
+
+    if aciklama:
+        print("  " + aciklama)
+
+    print("  " + renkli(cizgi(), "secim"))
+
+
+def menu_goster(baslik, secenekler, aciklama=""):
+    baslik_goster(baslik, aciklama)
+
+    for numara, metin in secenekler:
+        numara_metni = renkli(f"{numara:>2}", "secim")
+        print(f"  {numara_metni}  {metin}")
+
+    print()
+
+
+def liste_basligi(baslik):
+    print()
+    print("  " + renkli(baslik, "baslik"))
+    print("  " + renkli("─" * 36, "secim"))
+
+
+def liste_satiri(numara, metin, ayrinti=""):
+    numara_metni = renkli(f"{numara:>3}", "secim")
+    print(f"  {numara_metni}  {metin}")
+
+    if ayrinti:
+        print(f"       {ayrinti}")
+
+
+def durum_yaz(metin, tur="bilgi"):
+    simgeler = {"bilgi": "·", "basari": "✓", "hata": "!"}
+    simge = simgeler[tur]
+
+    if tur == "basari" or tur == "hata":
+        simge = renkli(simge, tur)
+
+    print(f"  {simge} {metin}")
+
+
+def girdi_oku(soru):
+    return input("  › " + soru)
 
 
 def verileri_kaydet(sistem):
@@ -557,18 +631,19 @@ def randevu_onay_ekrani(sistem, yonetici):
 
 def ilk_kurulum(sistem):
     while True:
-        print("\nİlk kurulum")
-        print("1 - Kurum ekle")
-        print("2 - Yönetici ekle")
-        print("0 - Çıkış")
-        secim = input("Seçiminiz: ").strip()
+        menu_goster("Klinik Randevu Sistemi", [
+            (1, "Kurum ekle"),
+            (2, "Yönetici ekle"),
+            (0, "Çıkış"),
+        ], "İlk kurulum")
+        secim = girdi_oku("Seçiminiz: ").strip()
 
         if secim == "1":
             kurum_ekle_ekrani(sistem)
 
         elif secim == "2":
             if len(sistem.kurumlari_listele()) == 0:
-                print("Önce bir kurum ekleyin.")
+                durum_yaz("Önce bir kurum ekleyin.")
                 continue
 
             kurumlari_goster(sistem)
@@ -578,7 +653,7 @@ def ilk_kurulum(sistem):
                 continue
 
             if sistem.kurumu_bul(kurum_no) is None:
-                print("Kurum bulunamadı.")
+                durum_yaz("Kurum bulunamadı.", "hata")
                 continue
 
             yonetici_ekle_ekrani(sistem, kurum_no)
@@ -591,11 +666,11 @@ def ilk_kurulum(sistem):
             return False
 
         else:
-            print("Geçersiz seçim.")
+            durum_yaz("Geçersiz seçim.", "hata")
 
 
 def kullanici_sec(sistem):
-    print("\nKullanıcı seçin")
+    baslik_goster("Kullanıcı seçin", "İşlem yapmak için listedeki numarayı yazın.")
     kullanicilari_goster(sistem)
     kullanici_no = sayi_oku("Kullanıcı numarası (0 çıkış): ")
 
@@ -605,32 +680,33 @@ def kullanici_sec(sistem):
     kullanici = sistem.kullaniciyi_bul(kullanici_no)
 
     if kullanici is None:
-        print("Kullanıcı bulunamadı.")
+        durum_yaz("Kullanıcı bulunamadı.", "hata")
 
     return kullanici
 
 
 def yonetici_menu(sistem, yonetici):
     while True:
-        print(f"\nYönetici: {yonetici.ad}")
-        print("1 - Kurum ve şubeleri listele")
-        print("2 - Şube ekle")
-        print("3 - Bölüm ekle")
-        print("4 - Hizmet ekle")
-        print("5 - Çalışma saati ayarla")
-        print("6 - Hasta ekle")
-        print("7 - Doktor ekle")
-        print("8 - Sağlık personeli ekle")
-        print("9 - Yönetici ekle")
-        print("10 - Çalışana hizmet ata")
-        print("11 - Kullanıcıları listele")
-        print("12 - Çalışan uygunluğu ekle")
-        print("13 - Çalışan uygunluklarını listele")
-        print("14 - Bekleyen randevuları listele")
-        print("15 - Randevu onayla")
-        print("16 - Yeni kurum ekle")
-        print("0 - Kullanıcı değiştir")
-        secim = input("Seçiminiz: ").strip()
+        menu_goster(f"Yönetici  /  {yonetici.ad}", [
+            (1, "Kurum ve şubeleri listele"),
+            (2, "Şube ekle"),
+            (3, "Bölüm ekle"),
+            (4, "Hizmet ekle"),
+            (5, "Çalışma saati ayarla"),
+            (6, "Hasta ekle"),
+            (7, "Doktor ekle"),
+            (8, "Sağlık personeli ekle"),
+            (9, "Yönetici ekle"),
+            (10, "Çalışana hizmet ata"),
+            (11, "Kullanıcıları listele"),
+            (12, "Çalışan uygunluğu ekle"),
+            (13, "Çalışan uygunluklarını listele"),
+            (14, "Bekleyen randevuları listele"),
+            (15, "Randevu onayla"),
+            (16, "Yeni kurum ekle"),
+            (0, "Kullanıcı değiştir"),
+        ], "Kurum, çalışan ve randevu işlemleri")
+        secim = girdi_oku("Seçiminiz: ").strip()
 
         if secim == "1":
             kurumlari_goster(sistem)
@@ -667,17 +743,18 @@ def yonetici_menu(sistem, yonetici):
         elif secim == "0":
             return
         else:
-            print("Geçersiz seçim.")
+            durum_yaz("Geçersiz seçim.", "hata")
 
 
 def hasta_menu(sistem, hasta):
     while True:
-        print(f"\nHasta: {hasta.ad}")
-        print("1 - Kurum ve şubeleri listele")
-        print("2 - Randevu oluştur")
-        print("3 - Randevularımı gör")
-        print("0 - Kullanıcı değiştir")
-        secim = input("Seçiminiz: ").strip()
+        menu_goster(f"Hasta  /  {hasta.ad}", [
+            (1, "Kurum ve şubeleri listele"),
+            (2, "Randevu oluştur"),
+            (3, "Randevularımı gör"),
+            (0, "Kullanıcı değiştir"),
+        ])
+        secim = girdi_oku("Seçiminiz: ").strip()
 
         if secim == "1":
             kurumlari_goster(sistem)
@@ -688,27 +765,29 @@ def hasta_menu(sistem, hasta):
         elif secim == "0":
             return
         else:
-            print("Geçersiz seçim.")
+            durum_yaz("Geçersiz seçim.", "hata")
 
 
 def calisan_menu(sistem, calisan):
     while True:
-        print(f"\n{calisan.unvan()}: {calisan.ad}")
-        print("1 - Kendi hizmetlerimi gör")
-        print("2 - Uygunluklarımı gör")
-        print("3 - Randevularımı gör")
-        print("0 - Kullanıcı değiştir")
-        secim = input("Seçiminiz: ").strip()
+        menu_goster(f"{calisan.unvan()}  /  {calisan.ad}", [
+            (1, "Kendi hizmetlerimi gör"),
+            (2, "Uygunluklarımı gör"),
+            (3, "Randevularımı gör"),
+            (0, "Kullanıcı değiştir"),
+        ])
+        secim = girdi_oku("Seçiminiz: ").strip()
 
         if secim == "1":
             sube = sistem.sube_bul(calisan.sube_id)
+            liste_basligi("Hizmetlerim")
 
             if len(calisan.hizmet_idleri) == 0:
-                print("Henüz hizmet atanmadı.")
+                durum_yaz("Henüz hizmet atanmadı.")
 
             for hizmet in sube.hizmetler:
                 if hizmet.id in calisan.hizmet_idleri:
-                    print(f"{hizmet.id} - {hizmet.ad}")
+                    liste_satiri(hizmet.id, hizmet.ad, f"{hizmet.sure_dakika} dakika")
 
         elif secim == "2":
             uygunluklari_goster(calisan)
@@ -717,7 +796,7 @@ def calisan_menu(sistem, calisan):
         elif secim == "0":
             return
         else:
-            print("Geçersiz seçim.")
+            durum_yaz("Geçersiz seçim.", "hata")
 
 
 def main():
